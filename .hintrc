@@ -7,5 +7,8 @@
     "not ie 11",
     "not ios_saf <= 18.4",
     "not safari <= 18.4"
-  ]
+  ],
+  "hints": {
+    "no-inline-styles": "off"
+  }
 }
