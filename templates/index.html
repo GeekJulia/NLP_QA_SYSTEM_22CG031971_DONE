@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>LLM QA — Web GUI</title>
+  <style>
+    
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #4A90E2, #9013FE);
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .container {
+        width: 480px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(12px);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0px 4px 25px rgba(0, 0, 0, 0.25);
+        color: white;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+
+    label {
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    textarea, input {
+        width: 100%;
+        padding: 12px;
+        margin-top: 8px;
+        border: none;
+        border-radius: 8px;
+        outline: none;
+        resize: none;
+    }
+
+    button {
+        width: 100%;
+        margin-top: 15px;
+        padding: 12px;
+        background: #2ecc71;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        color: white;
+    }
+
+    button:hover {
+        background: #27ae60;
+    }
+
+    .result-box {
+        margin-top: 18px;
+        background: rgba(0, 0, 0, 0.35);
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>LLM QA — Web GUI</h2>
+    <p>Type a question, click **Ask**, and see the processed question and the model's answer.</p>
+
+    <label for="question">Your question</label>
+    <textarea id="question" placeholder="e.g. What is recursion?"></textarea>
+
+    <div class="row" style="margin-top:10px;">
+      <div class="col">
+        <label for="model">Model</label>
+        <input id="model" value="gpt2" style="width:100%; padding:8px; border-radius:8px; border:1px solid #e2e8f0" />
+      </div>
+      <div class="col">
+        <label for="max_tokens">Max tokens</label>
+        <input id="max_tokens" type="number" value="150" style="width:100%; padding:8px; border-radius:8px; border:1px solid #e2e8f0" />
+      </div>
+      <div style="display:flex; align-items:flex-end;">
+        <button id="askBtn">Ask</button>
+      </div>
+    </div>
+
+    <hr style="margin:18px 0; border:none; height:1px; background:#e6eef8;" />
+
+    <div id="results" style="display:none;">
+      <h3>Processed question</h3>
+      <pre id="processed"></pre>
+
+      <h3>Prompt sent to model</h3>
+      <pre id="prompt"></pre>
+
+      <h3>Answer (generated)</h3>
+      <pre id="answer"></pre>
+    </div>
+
+    <div id="error" style="display:none; margin-top:12px;">
+      <h3 style="color:#b91c1c">Error</h3>
+      <pre id="errtext"></pre>
+    </div>
+
+    <p class="meta">Make sure the server has <strong>HF_API_TOKEN</strong> environment variable set.</p>
+  </div>
+
+  <script>
+    const askBtn = document.getElementById('askBtn');
+    askBtn.onclick = async () => {
+      document.getElementById('results').style.display = 'none';
+      document.getElementById('error').style.display = 'none';
+
+      const question = document.getElementById('question').value.trim();
+      const model = document.getElementById('model').value.trim();
+      const max_tokens = document.getElementById('max_tokens').value;
+
+      if (!question) {
+        alert("Please enter a question.");
+        return;
+      }
+
+      askBtn.disabled = true;
+      askBtn.textContent = "Asking...";
+
+      try {
+        const resp = await fetch('/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question, model, max_tokens })
+        });
+
+        const data = await resp.json();
+        if (!resp.ok) {
+          document.getElementById('error').style.display = 'block';
+          document.getElementById('errtext').textContent = JSON.stringify(data, null, 2);
+        } else {
+          document.getElementById('results').style.display = 'block';
+          document.getElementById('processed').textContent = data.processed_question;
+          document.getElementById('prompt').textContent = data.prompt;
+          document.getElementById('answer').textContent = data.answer;
+        }
+      } catch (err) {
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('errtext').textContent = String(err);
+      } finally {
+        askBtn.disabled = false;
+        askBtn.textContent = "Ask";
+      }
+    };
+  </script>
+</body>
+</html>
