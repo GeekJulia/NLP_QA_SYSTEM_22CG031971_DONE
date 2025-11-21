@@ -1,4 +1,4 @@
 Name=YAKUBU JULIA ESELE
 Matric number=22CGO31971
-Live URL of hosted application=
+Live URL of hosted application=https://nlp-qa-system-22cg031971-done.onrender.com
 GitHub repository link=https://github.com/GeekJulia/NLP_QA_SYSTEM_22CG031971_DONE
